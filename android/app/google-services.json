@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "672757681028",
+    "project_id": "sugarsync-5baf6",
+    "storage_bucket": "sugarsync-5baf6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672757681028:android:b654936e35cf704a1e2bd1",
+        "android_client_info": {
+          "package_name": "com.example.g21285889_daniru_gihen"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDCu6M9oeL-aX03QHKLTsTyeHDGYdBZ2W4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

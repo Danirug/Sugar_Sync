@@ -1,0 +1,182 @@
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+class SignUp_Screen extends StatefulWidget{
+  @override
+  _SignUpScreenState createState() => _SignUpScreenState();
+}
+
+class _SignUpScreenState extends State<SignUp_Screen> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _success = false;
+  String _userEmail = '';
+  bool _acceptTerms = false;
+
+  void _register() async{
+    try{
+      final UserCredential userCredential =
+      await _auth.createUserWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      if(userCredential.user != null) {
+        setState(() {
+          _success = true;
+          _userEmail = userCredential.user!.email!;
+        });
+        Navigator.pushNamed(context, 'DetailsScreen');
+      }
+    } on FirebaseAuthException catch (e){
+      setState(() {
+        _success = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: ${e.message}'),
+          )
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context){
+    return Scaffold(
+      backgroundColor: Color(0xFFCCF4E6),
+      body: SafeArea(
+        child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  children: [
+                    SizedBox(height: 18),
+                    Text(
+                      'Hey there,',
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Create An Account',
+                      style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+                Column(
+                  children: [
+                    TextField(
+                      controller: _firstNameController,
+                      decoration: InputDecoration(
+                        hintText: 'First Name',
+                        prefixIcon: Icon(Icons.person),
+                      ),
+                    ),
+                    SizedBox(height:16),
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: InputDecoration(
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                          hintText: 'Password',
+                          prefixIcon: Icon(Icons.lock_outline)
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _acceptTerms,
+                          onChanged: (value){
+                            setState(() {
+                              _acceptTerms = value!;
+                            });
+                          },
+                        ),
+                        Text('Accept terms and Conditions')
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Container(
+                      width: double.infinity,
+                      height: 56,
+                      decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(28),
+                          gradient: LinearGradient(
+                            colors: [
+                              Color(0xFF3498DB),
+                              Color(0xFF1C5175),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          )
+                      ),
+                      child: ElevatedButton(
+                        onPressed: (){
+                          if(_acceptTerms){
+                            _register();
+                          }else{
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Please accept terms & condition'),
+                                )
+                            );
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(28),
+                            )
+                        ),
+                        child: Text(
+                          'Sign Up',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    TextButton(
+                      onPressed: (){
+                        Navigator.pushNamed(context, 'loginScreen');
+                      },
+                      child:Text('Already have an account? Login'),
+                    )
+                  ],
+                ),
+              ],
+            )
+        ),
+      ),
+    );
+  }
+}
+
+//Navigator.pushNamed(context, 'DetailsScreen');
+
+
