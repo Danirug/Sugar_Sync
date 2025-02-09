@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:g21285889_daniru_gihen/Onborading_Screens/Welcome_Screen.dart';
+import 'package:g21285889_daniru_gihen/Onborading_Screens/Splash_Screen.dart';
 
 void main() {
   runApp(const SugarSync());
