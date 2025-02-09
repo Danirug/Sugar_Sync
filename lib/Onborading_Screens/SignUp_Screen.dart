@@ -25,6 +25,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
         password: _passwordController.text.trim(),
       );
       if(userCredential.user != null) {
+        await userCredential.user!.updateDisplayName(_firstNameController.text.trim());
         setState(() {
           _success = true;
           _userEmail = userCredential.user!.email!;

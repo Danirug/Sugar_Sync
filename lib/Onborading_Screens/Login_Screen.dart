@@ -1,8 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 
-class login_Screen extends StatelessWidget{
+class login_Screen extends StatefulWidget {
   const login_Screen({super.key});
+
+  @override
+  _login_ScreenState createState() => _login_ScreenState();
+}
+
+
+class _login_ScreenState extends State<login_Screen> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  void _login() async{
+    try{
+      await _auth.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      print("login succesfull");
+      //if successful navigate to the main dashboard
+      //put the route screen here
+    }on FirebaseAuthException catch (e){
+      print("login failed: ${e.code} - ${e.message}");
+
+      String errorMessage = 'An error occured, Please try again';
+
+      if(e.code == 'user-not-found'){
+        errorMessage = 'No account found with this email.';
+      }else if (e.code == 'wrong-password'){
+        errorMessage = 'Incorrect password. Try again';
+      }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context){
@@ -30,6 +68,8 @@ class login_Screen extends StatelessWidget{
               Column(
                 children: [
                   TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText:'Email',
                       prefixIcon: Icon(Icons.email_outlined),
@@ -37,6 +77,7 @@ class login_Screen extends StatelessWidget{
                   ),
                   SizedBox(height: 16),
                   TextField(
+                    controller: _passwordController,
                     obscureText: true,
                     decoration: InputDecoration(
                       hintText: 'Password',
@@ -68,6 +109,7 @@ class login_Screen extends StatelessWidget{
                     ),
                     child: ElevatedButton(
                       onPressed: (){
+                        _login();
                         //goes to the main dashborad
                       },
                       style: ElevatedButton.styleFrom(
