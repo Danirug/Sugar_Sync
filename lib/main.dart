@@ -4,6 +4,8 @@ import 'package:g21285889_daniru_gihen/Onborading_Screens/Welcome_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/Splash_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/SignUp_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/Login_Screen.dart';
+import 'package:g21285889_daniru_gihen/Onborading_Screens/Deatils_Screen.dart';
+import 'package:g21285889_daniru_gihen/Dashboard_Screens/MainDashboard_Screen.dart';
 
 
 void main() async{
@@ -24,7 +26,8 @@ class SugarSync extends StatelessWidget {
           "WelcomeScreen":(context)=>Welcome_Screen(),
           "loginScreen":(context)=>login_Screen(),
           "SignupScreen":(context)=>SignUp_Screen(),
-          //"DetailsScreen":(context)=>Details_Screen()
+          "DetailsScreen":(context)=>Details_Screen()
+          "DashBoardScreen":(context)=>Dashboard_Screen();
           //"ForgotPassword":(context)=>
         }
     );

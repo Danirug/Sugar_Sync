@@ -135,7 +135,8 @@ class _SignUpScreenState extends State<SignUp_Screen> {
                       child: ElevatedButton(
                         onPressed: (){
                           if(_acceptTerms){
-                            _register();
+                           // _register();
+                            Navigator.pushNamed(context, 'DetailsScreen');
                           }else{
                             ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
