@@ -14,8 +14,12 @@ class _login_ScreenState extends State<login_Screen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   void _login() async{
+    setState(() {
+      _isLoading = true;
+    });
     try{
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
@@ -24,6 +28,7 @@ class _login_ScreenState extends State<login_Screen> {
       print("login succesfull");
       //if successful navigate to the main dashboard
       //put the route screen here
+      Navigator.pushNamed(context, 'DashBoardScreen');
     }on FirebaseAuthException catch (e){
       print("login failed: ${e.code} - ${e.message}");
 
@@ -38,6 +43,10 @@ class _login_ScreenState extends State<login_Screen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
       );
+    } finally{
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -47,6 +56,7 @@ class _login_ScreenState extends State<login_Screen> {
     return Scaffold(
       backgroundColor: Color(0xFFCCF4E6),
       body: SafeArea(
+        child : SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
@@ -108,10 +118,7 @@ class _login_ScreenState extends State<login_Screen> {
                       borderRadius: BorderRadius.circular(28),
                     ),
                     child: ElevatedButton(
-                      onPressed: (){
-                        _login();
-                        //goes to the main dashborad
-                      },
+                      onPressed: _isLoading ? null : _login,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         foregroundColor: Colors.white,
@@ -144,6 +151,7 @@ class _login_ScreenState extends State<login_Screen> {
               )
             ],
           ),
+        ),
         ),
       ),
     );

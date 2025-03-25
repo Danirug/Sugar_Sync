@@ -1,7 +1,48 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Details_Screen extends StatelessWidget {
+class Details_Screen extends StatefulWidget {
   const Details_Screen({super.key});
+
+  @override
+  _DetailsScreenState createState() => _DetailsScreenState();
+}
+
+class _DetailsScreenState extends State<Details_Screen> {
+
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  // Controllers for text fields
+  final TextEditingController _ageController = TextEditingController();
+  final TextEditingController _weightController = TextEditingController();
+  final TextEditingController _heightController = TextEditingController();
+
+  String? _selectedGender;  // To store dropdown value
+
+
+  void _SaveDetails() async{
+    try{
+      User? user  = _auth.currentUser;
+      if(user != null){
+        await _firestore.collection('users').doc(user.uid).update({
+          'gender': _selectedGender,
+          'age': _ageController.text.trim(),
+          'weight': _weightController.text.trim(),
+          'height': _heightController.text.trim(),
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+
+        Navigator.pushNamed(context, 'DashBoardScreen');
+      }
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error saving details: $e')),
+      );
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -46,13 +87,20 @@ class Details_Screen extends StatelessWidget {
                     DropdownMenuItem(value: "Male", child: Text("Male")),
                     DropdownMenuItem(value: "Female", child: Text("Female")),
                   ],
-                  onChanged: (value) {},
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedGender = value;
+                    });
+                  },
+                  value: _selectedGender,
                 ),
                 SizedBox(height: 16),
                 TextField(
+                  controller: _ageController,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
                     prefixIcon: Icon(Icons.calendar_today),
-                    hintText: "Date of Birth",
+                    hintText: "Age",
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
@@ -61,6 +109,8 @@ class Details_Screen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _weightController,
+                        keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.monitor_weight),
                           hintText: "Your Weight",
@@ -83,6 +133,8 @@ class Details_Screen extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: _heightController,
+                        keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           prefixIcon: Icon(Icons.height),
                           hintText: "Enter your height",
@@ -106,7 +158,13 @@ class Details_Screen extends StatelessWidget {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, 'DashBoardScreen');
+                      if(_selectedGender !=null && _ageController.text.isNotEmpty && _weightController.text.isNotEmpty && _heightController.text.isNotEmpty){
+                        _SaveDetails();
+                      }else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Please fill all feilds')),
+                        );
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:g21285889_daniru_gihen/Dashboard_Screens/UpdatePersonalData_Screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -81,11 +82,11 @@ class ProfileScreen extends StatelessWidget {
             SizedBox(height: 24),
 
             // List Sections
-            _buildListItem(Icons.person_outline, "Personal Data"),
+            _buildListItem(context,Icons.person_outline, "Personal Data"),
             _buildDivider(),
-            _buildListItem(Icons.pie_chart_outline, "Activity History"),
+            _buildListItem(context,Icons.pie_chart_outline, "Activity History"),
             _buildDivider(),
-            _buildListItem(Icons.settings_outlined, "Settings"),
+            _buildListItem(context,Icons.settings_outlined, "Settings"),
             _buildDivider()
           ],
         ),
@@ -116,29 +117,44 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildListItem(IconData icon, String title) {
+  Widget _buildListItem(BuildContext context, IconData icon, String title) {
     return Padding(
-      padding:  EdgeInsets.symmetric(vertical: 8),
-      child: Row(
-        children: [
-          Icon(icon, size: 24, color: Colors.black87),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              title,
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+      padding: EdgeInsets.symmetric(vertical: 8),
+      child: TextButton(
+        onPressed: () {
+          if (title == "Personal Data") {
+            Navigator.pushNamed(context, 'UpdateScreen');
+          } else if (title == "Activity History") {
+            Navigator.pushNamed(context, 'InsightsScreen');
+          } else if (title == "Settings") {
+            Navigator.pushNamed(context, 'SettingScreen');
+          }
+        },
+        style: TextButton.styleFrom(
+          padding: EdgeInsets.zero,
+          alignment: Alignment.centerLeft,
+        ),
+        child: Row(
+          children: [
+            Icon(icon, size: 24, color: Colors.black87),
+            SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
             ),
-          ),
-           Icon(Icons.chevron_right, size: 24, color: Colors.black54),
-        ],
-      ),
+            Icon(Icons.chevron_right, size: 24, color: Colors.black54),
+          ],
+        ),
+      ), // Moved child inside TextButton
     );
   }
 }
 
-Widget _buildDivider(){
+Widget _buildDivider() {
   return Divider(
-    thickness: 4,
+    thickness: 2,
     color: Colors.black,
   );
 }

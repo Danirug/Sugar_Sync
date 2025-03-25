@@ -7,6 +7,9 @@ import 'package:g21285889_daniru_gihen/Onborading_Screens/SignUp_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/Login_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/Deatils_Screen.dart';
 import 'package:g21285889_daniru_gihen/Dashboard_Screens/MainDashboard_Screen.dart';
+import 'package:g21285889_daniru_gihen/Dashboard_Screens/UpdatePersonalData_Screen.dart';
+import 'package:g21285889_daniru_gihen/Dashboard_Screens/Insights_Screen.dart';
+import 'package:g21285889_daniru_gihen/Dashboard_Screens/Settings_Screen.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
 void main() async {
@@ -48,7 +51,9 @@ class SugarSync extends StatelessWidget {
           "SignupScreen":(context)=>SignUp_Screen(),
           "DetailsScreen":(context)=>Details_Screen(),
           "DashBoardScreen":(context)=>Dashboard_Screen(),
-          //"InsightsScreen":(context)=>
+          "UpdateScreen":(context)=>Update_Screen(),
+          "InsightsScreen":(context)=>InsightsScreen(),
+          "SettingScreen":(context)=>SettingsScreen()
           //"ForgotPassword":(context)=>
         }
     );

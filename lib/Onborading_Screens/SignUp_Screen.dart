@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
+final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
 class SignUp_Screen extends StatefulWidget{
+  const SignUp_Screen ({super.key});
+
   @override
   _SignUpScreenState createState() => _SignUpScreenState();
 }
@@ -26,6 +31,13 @@ class _SignUpScreenState extends State<SignUp_Screen> {
       );
       if(userCredential.user != null) {
         await userCredential.user!.updateDisplayName(_firstNameController.text.trim());
+
+        await _firestore.collection('users').doc(userCredential.user!.uid).set({
+          'firstName': _firstNameController.text.trim(),
+          'email': _emailController.text.trim(),
+          'createdAt': FieldValue.serverTimestamp(),
+          'uid': userCredential.user!.uid,
+        });
         setState(() {
           _success = true;
           _userEmail = userCredential.user!.email!;
@@ -39,6 +51,10 @@ class _SignUpScreenState extends State<SignUp_Screen> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: ${e.message}'),
           )
+      );
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('An unexpected error occurred: $e')),
       );
     }
   }
