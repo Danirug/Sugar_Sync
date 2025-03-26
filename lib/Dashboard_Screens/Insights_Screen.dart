@@ -11,16 +11,17 @@ class InsightsScreen extends StatefulWidget {
 }
 
 class _InsightsScreenState extends State<InsightsScreen> {
-  Map<String, double> _weeklySugar = {}; // Store weekly sugar data
-  double ? _targetSugar;
+  Map<String, double> _dailySugar = {}; // Store daily sugar data (e.g., {"2025-03-26": 20.0})
+  List<double> _weeklySugarList = List.filled(7, 0.0); // Aggregated weekly sugar (Mon-Sun)
+  double? _targetSugar;
 
   @override
   void initState() {
     super.initState();
-    _loadWeeklySugarData();
+    _loadSugarData();
   }
 
-  Future<void> _loadWeeklySugarData() async{
+  Future<void> _loadSugarData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
@@ -28,9 +29,29 @@ class _InsightsScreenState extends State<InsightsScreen> {
       if (doc.exists) {
         final data = doc.data()!;
         setState(() {
-          _weeklySugar = Map<String, double>.from(data['weeklySugar'] ?? {});
+          _dailySugar = Map<String, double>.from(data['dailySugar'] ?? {});
           _targetSugar = data['targetSugar']?.toDouble();
+          _aggregateWeeklySugar(); // Aggregate daily data into weekly format
         });
+      }
+    }
+  }
+
+  void _aggregateWeeklySugar() {
+    // Reset weekly sugar list
+    _weeklySugarList = List.filled(7, 0.0);
+
+    // Get the start of the current week (Monday)
+    final now = DateTime.now();
+    final daysSinceMonday = now.weekday - 1; // Monday is 1, so daysSinceMonday is 0 for Monday
+    final startOfWeek = now.subtract(Duration(days: daysSinceMonday));
+
+    // Aggregate sugar for each day of the current week
+    for (int i = 0; i < 7; i++) {
+      final date = startOfWeek.add(Duration(days: i));
+      final dateString = date.toIso8601String().split('T')[0]; // e.g., "2025-03-26"
+      if (_dailySugar.containsKey(dateString)) {
+        _weeklySugarList[i] = _dailySugar[dateString] ?? 0.0;
       }
     }
   }
@@ -42,14 +63,14 @@ class _InsightsScreenState extends State<InsightsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-         title: Text(
+        title: Text(
           "Insights",
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
       body: Padding(
-        padding:EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -97,21 +118,21 @@ class _InsightsScreenState extends State<InsightsScreen> {
                         titlesData: FlTitlesData(
                           leftTitles: AxisTitles(
                             sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 40,
-                                interval: 50,
-                                getTitlesWidget: (value, meta){
-                                  if(value == 0 || value % 10 == 0){
-                                    return Text(
-                                      '${value.toInt()}g',
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12
-                                      ),
-                                    );
-                                  }
-                                  return SizedBox.shrink();
-                                },
+                              showTitles: true,
+                              reservedSize: 40,
+                              interval: 50,
+                              getTitlesWidget: (value, meta) {
+                                if (value == 0 || value % 10 == 0) {
+                                  return Text(
+                                    '${value.toInt()}g',
+                                    style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontSize: 12,
+                                    ),
+                                  );
+                                }
+                                return SizedBox.shrink();
+                              },
                             ),
                           ),
                           bottomTitles: AxisTitles(
@@ -126,7 +147,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                                     style: TextStyle(
                                       color: Colors.grey[800],
                                       fontSize: 12,
-                                      fontWeight: FontWeight.w500
+                                      fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                 );
@@ -140,7 +161,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
                           enabled: true,
                           touchTooltipData: BarTouchTooltipData(
                             getTooltipColor: (group) => Colors.blue,
-                            getTooltipItem: (group, groupIndex, rod, rodIndex){
+                            getTooltipItem: (group, groupIndex, rod, rodIndex) {
                               final sugarValue = rod.toY;
                               String tooltipText = '${sugarValue.toStringAsFixed(1)}g';
                               if (_targetSugar != null && sugarValue > _targetSugar!) {
@@ -149,11 +170,11 @@ class _InsightsScreenState extends State<InsightsScreen> {
                               }
                               return BarTooltipItem(
                                 tooltipText,
-                                TextStyle(color: Colors.white, fontWeight: FontWeight.bold,fontSize: 14),
+                                TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                               );
-                            }
-                          )
-                        )
+                            },
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -168,27 +189,25 @@ class _InsightsScreenState extends State<InsightsScreen> {
 
   List<BarChartGroupData> _getBarGroups() {
     return List.generate(7, (index) {
-      final sugarValue = _weeklySugar[index.toString()] ?? 0.0;
+      final sugarValue = _weeklySugarList[index]; // Use aggregated weekly data
       return BarChartGroupData(
         x: index,
         barRods: [
           BarChartRodData(
             toY: sugarValue,
-            color: _targetSugar !=null && sugarValue > _targetSugar!
-              ? Colors.red
-              : Colors.purple[300],
+            color: _targetSugar != null && sugarValue > _targetSugar!
+                ? Colors.red
+                : Colors.purple[300],
             width: 20,
             borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
               toY: 150,
               color: Colors.grey[200],
-            )
+            ),
           ),
         ],
       );
     });
   }
 }
-
-

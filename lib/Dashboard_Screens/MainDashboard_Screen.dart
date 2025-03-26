@@ -73,6 +73,7 @@ class _HomeScreenState extends State<HomeScreen> {
   double? _targetSugar; // Starts as null until user sets it
   double _consumedSugar = 0.0; // Starts at 0
   bool _targetSet = false; // Tracks if target has been set
+  Map<String, double> _dailySugar = {};
   Map<String, double> _WeeklySugar = {};
   String _firstName = 'User';
   String _lastName = '';
@@ -91,15 +92,23 @@ class _HomeScreenState extends State<HomeScreen> {
       final doc = await docRef.get();
       if (doc.exists) {
         final data = doc.data()!;
+        final todayDate = DateTime.now().toIso8601String().split('T')[0];
+
         setState(() {
           _targetSugar = data['targetSugar']?.toDouble();
-          _consumedSugar = data['consumedSugar']?.toDouble() ?? 0.0;
           _targetSet = _targetSugar != null; // Target is set if it exists in Firestore
-          _WeeklySugar = Map<String, double>.from(data['weeklySugar'] ?? {});
-          final todayIndex = (DateTime.now().weekday - 1).toString();
-          _consumedSugar = _WeeklySugar[todayIndex] ?? 0.0;
+          _dailySugar = Map<String, double>.from(data['dailySugar'] ?? {});
           _firstName = data['firstName'] ?? 'User';
           _lastName = data['lastName'] ?? '';
+
+          // Check if there's data for today; if not, reset _consumedSugar to 0
+          if (_dailySugar.containsKey(todayDate)) {
+            _consumedSugar = _dailySugar[todayDate] ?? 0.0;
+          } else {
+            _consumedSugar = 0.0; // Reset to 0 for a new day
+            _dailySugar[todayDate] = 0.0; // Initialize today's entry
+            _saveSugarData(); // Save the reset value to Firestore
+          }
         });
       }
     }
@@ -110,12 +119,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
-      final todayIndex = (DateTime.now().weekday - 1).toString();
-      _WeeklySugar[todayIndex] = _consumedSugar; // Update today's sugar
+      final todayDate = DateTime.now().toIso8601String().split('T')[0]; // e.g., "2025-03-26"
+      _dailySugar[todayDate] = _consumedSugar; // Update today's sugar
       await docRef.set({
         'targetSugar': _targetSugar,
         'consumedSugar': _consumedSugar,
-        'weeklySugar': _WeeklySugar,
+        'dailySugar': _dailySugar, // Save the daily sugar map
       }, SetOptions(merge: true)); // Merge to avoid overwriting other fields
     }
   }

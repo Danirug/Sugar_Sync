@@ -16,36 +16,38 @@ class _UpdateScreenState extends State<Update_Screen> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
-  bool _isLoading = false ;
+  final TextEditingController targetSugarController = TextEditingController();
+  bool _isLoading = false;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
     _loadUserData();
   }
 
-  Future<void> _loadUserData() async{
+  Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
-    if(user != null){
+    if (user != null) {
       final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
       final doc = await docRef.get();
-      if(doc.exists){
+      if (doc.exists) {
         final data = doc.data()!;
         setState(() {
           firstNameController.text = data['firstName'] ?? '';
           lastNameController.text = data['lastName'] ?? '';
           weightController.text = data['weight']?.toString() ?? '';
           heightController.text = data['height']?.toString() ?? '';
+          targetSugarController.text = data['targetSugar']?.toString() ?? '';
         });
       }
     }
   }
 
-  Future<void> _updateUserData()async{
+  Future<void> _updateUserData() async {
     final user = FirebaseAuth.instance.currentUser;
-    if(user == null){
+    if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('no user logged in')),
+        SnackBar(content: Text('No user logged in')),
       );
       return;
     }
@@ -59,10 +61,18 @@ class _UpdateScreenState extends State<Update_Screen> {
 
     final weight = double.tryParse(weightController.text.trim());
     final height = double.tryParse(heightController.text.trim());
+    final targetSugar = double.tryParse(targetSugarController.text.trim());
 
     if (weight == null || height == null || weight <= 0 || height <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Please enter valid weight and height')),
+      );
+      return;
+    }
+
+    if (targetSugar == null || targetSugar <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter a valid target sugar amount')),
       );
       return;
     }
@@ -78,13 +88,14 @@ class _UpdateScreenState extends State<Update_Screen> {
         'lastName': lastNameController.text.trim(),
         'weight': weight,
         'height': height,
-      }, SetOptions(merge: true)); // Merge to avoid overwriting other fields
+        'targetSugar': targetSugar,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Profile updated successfully')),
       );
 
-      // Navigate back to Dashboard_Screen after update
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => Dashboard_Screen()),
@@ -98,7 +109,6 @@ class _UpdateScreenState extends State<Update_Screen> {
         _isLoading = false;
       });
     }
-
   }
 
   @override
@@ -155,10 +165,16 @@ class _UpdateScreenState extends State<Update_Screen> {
                 "Height",
                 Icons.height,
               ),
+
+              SizedBox(height: 15),
+              _buildTextField(
+                targetSugarController,
+                "Target Sugar (g)",
+                Icons.food_bank_rounded,
+              ),
+              // *** END UPDATED ***
               SizedBox(height: 30),
-
               _buildUpdateButton(),
-
               SizedBox(height: 20),
             ],
           ),
@@ -178,9 +194,8 @@ class _UpdateScreenState extends State<Update_Screen> {
           fillColor: Colors.white,
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none)
-      ),
-      keyboardType: hintText == "Weight" || hintText == "Height"
+              borderSide: BorderSide.none)),
+      keyboardType: hintText == "Weight" || hintText == "Height" || hintText == "Target Sugar (g)"
           ? TextInputType.number
           : TextInputType.text,
     );
@@ -208,10 +223,10 @@ class _UpdateScreenState extends State<Update_Screen> {
             elevation: 5,
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          onPressed: _isLoading? null : _updateUserData, // disables when button is loading 
+          onPressed: _isLoading ? null : _updateUserData,
           child: _isLoading
-            ?CircularProgressIndicator(color: Colors.black)
-              :Text("update")
+              ? CircularProgressIndicator(color: Colors.black)
+              : Text("Update"),
         ),
       ),
     );
