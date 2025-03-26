@@ -15,9 +15,9 @@ class Welcome_Screen extends StatelessWidget{
               children: [
                 Column(
                   children: [
-                    SizedBox(height: 100),
+                    SizedBox(height: 50),
                     Text(
-                      'Welcome to\nSugar Sync',
+                      'Welcome to Sugar Sync',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 32,
@@ -26,6 +26,12 @@ class Welcome_Screen extends StatelessWidget{
                         height: 1.2,
                       ),
                     ),
+                    SizedBox(height: 20),
+                    Image.asset(
+                        'Assets/Welcome.png',
+                      height: 450,
+                      fit: BoxFit.fill,
+                    )
                   ],
                 ),
                 Column(

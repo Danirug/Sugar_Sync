@@ -65,15 +65,26 @@ class _SignUpScreenState extends State<SignUp_Screen> {
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Color(0xFFCCF4E6),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
+      ),
       body: SafeArea(
         child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: SingleChildScrollView(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
                   children: [
-                    SizedBox(height: 18),
+                    SizedBox(height: 16),
                     Text(
                       'Hey there,',
                       style: TextStyle(
@@ -92,9 +103,16 @@ class _SignUpScreenState extends State<SignUp_Screen> {
                           color: Colors.black
                       ),
                       textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 20),
+                    Image.asset(
+                      'Assets/Person01.png',
+                      height: 200,
+                      fit: BoxFit.contain,
                     )
                   ],
                 ),
+                SizedBox(height: 20),
                 Column(
                   children: [
                     TextField(
@@ -201,6 +219,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
             )
         ),
       ),
+    ),
     );
   }
 }

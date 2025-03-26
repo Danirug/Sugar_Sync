@@ -69,6 +69,9 @@ flutter:
   assets:
   - Assets/DetailsScreen.png
   - Assets/SugarSync.png
+  - Assets/Welcome.png
+  - Assets/Person01.png
+  - Assets/LoginPic.png
 
 
   # An image asset can refer to one or more resolution-specific "variants", see

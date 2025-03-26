@@ -55,6 +55,16 @@ class _login_ScreenState extends State<login_Screen> {
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Color(0xFFCCF4E6),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pop(context); // Navigate back to the previous screen
+          },
+        ),
+      ),
       body: SafeArea(
         child : SingleChildScrollView(
         child: Padding(
@@ -64,7 +74,7 @@ class _login_ScreenState extends State<login_Screen> {
             children: [
               Column(
                 children: [
-                  SizedBox(height: 100),
+                  SizedBox(height: 15),
                   Text(
                     'Welcome Back',
                     style: TextStyle(
@@ -73,8 +83,15 @@ class _login_ScreenState extends State<login_Screen> {
                       color: Colors.black87,
                     ),
                   ),
+                  SizedBox(height: 20),
+                  Image.asset(
+                    'Assets/LoginPic.png',
+                    height: 280,
+                    fit: BoxFit.contain,
+                  )
                 ],
               ),
+              SizedBox(height: 30),
               Column(
                 children: [
                   TextField(

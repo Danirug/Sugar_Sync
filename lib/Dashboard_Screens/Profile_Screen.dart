@@ -1,8 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:g21285889_daniru_gihen/Dashboard_Screens/UpdatePersonalData_Screen.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
+
+  @override
+  _ProfileScreenState createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen> {
+  String _firstName = 'User';
+  String _lastName = '';
+  String _height = '';
+  String _weight = '';
+  String _sugarIntake = '';
+
+  @override
+  void initState(){
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final doc = await docRef.get();
+      if (doc.exists) {
+        final data = doc.data()!;
+        setState(() {
+          _firstName = data['firstName'] ?? 'User';
+          _lastName = data['lastName'] ?? '';
+          _height = data['height']?.toString() ?? 'N/A';
+          _weight = data['weight']?.toString() ?? 'N/A';
+          _sugarIntake = data['targetSugar']?.toStringAsFixed(0) ?? 'N/A';
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +75,7 @@ class ProfileScreen extends StatelessWidget {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
-                  BoxShadow(color: Colors.black12.withOpacity(0.1), blurRadius: 10, spreadRadius: 2),
+                  BoxShadow(color: Colors.black, blurRadius: 10, spreadRadius: 2),
                 ],
               ),
               child: Column(
@@ -49,12 +86,14 @@ class ProfileScreen extends StatelessWidget {
                        SizedBox(width: 12),
                        Expanded(
                         child: Text(
-                          "Stefani Wong",
+                          "$_firstName $_lastName",
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          Navigator.pushNamed(context, 'UpdateScreen');
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -70,9 +109,9 @@ class ProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildInfoCard("", "Height"),
-                      _buildInfoCard("", "Weight"),
-                      _buildInfoCard("", "Sugar intake"),
+                      _buildInfoCard("$_height cm", "Height"),
+                      _buildInfoCard("$_weight kg", "Weight"),
+                      _buildInfoCard("$_sugarIntake g", "Sugar intake"),
                     ],
                   ),
                 ],
