@@ -1,14 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:g21285889_daniru_gihen/Onborading_Screens/Welcome_Screen.dart';
 
-class SettingsScreen extends StatelessWidget {
+
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
+
+  @override
+  _SettingsScreenState createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  bool _isDarkMode = false;
+
+  //Logout logic
+  Future<void> _logout(BuildContext context) async{
+    try{
+      await FirebaseAuth.instance.signOut();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => Welcome_Screen()),
+          (Route<dynamic> route) => false,
+      );
+    }catch(e){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error logging out: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE0F2F1),
+      backgroundColor:  Color(0xFFCCF4E6),
       appBar: AppBar(
-        title: const Text('Settings'),
+        title:  Text('Settings'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
@@ -16,38 +41,36 @@ class SettingsScreen extends StatelessWidget {
         children: [
           // Privacy Policy
           ListTile(
-            leading: const Icon(Icons.privacy_tip_outlined),
-            title: const Text('Privacy Policy'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(Icons.privacy_tip_outlined),
+            title: Text('Privacy Policy'),
+            trailing:Icon(Icons.chevron_right),
             onTap: () {
-              // TODO: Implement privacy policy navigation
-              // Example: Navigator.push(context, MaterialPageRoute(builder: (context) => PrivacyPolicyScreen()));
+
             },
           ),
 
-          const Divider(),
+          Divider(),
 
           // Log Out
           ListTile(
-            leading: const Icon(Icons.logout_outlined),
-            title: const Text('Log out'),
-            trailing: const Icon(Icons.chevron_right),
+            leading: Icon(Icons.logout_outlined),
+            title: Text('Log out'),
+            trailing: Icon(Icons.chevron_right),
             onTap: () {
-              // TODO: Implement logout functionality
-              // Example: _showLogoutConfirmationDialog(context);
+              _showLogoutDialog(context);
+
             },
           ),
 
-          const Divider(),
+          Divider(),
 
           // Theme Toggle
           SwitchListTile(
-            secondary: const Icon(Icons.dark_mode_outlined),
-            title: const Text('Theme'),
+            secondary: Icon(Icons.dark_mode_outlined),
+            title: Text('Theme'),
             value: false,
             onChanged: (bool value) {
-              // TODO: Implement theme switching
-              // Example: Provider.of<ThemeProvider>(context, listen: false).toggleTheme();
+
             },
           ),
         ],
@@ -55,27 +78,26 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  // Optional: Logout confirmation dialog
-  void _showLogoutConfirmationDialog(BuildContext context) {
+
+  void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Log Out'),
-          content: const Text('Are you sure you want to log out?'),
+          title: Text('Log Out'),
+          content: Text('Are you sure you want to log out?'),
           actions: [
             TextButton(
-              child: const Text('Cancel'),
+              child:Text('Cancel'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
-              child: const Text('Log Out'),
+              child: Text('Log Out'),
               onPressed: () {
-                // TODO: Implement actual logout logic
-                // Example: AuthService().logout();
                 Navigator.of(context).pop();
+                _logout(context);
               },
             ),
           ],

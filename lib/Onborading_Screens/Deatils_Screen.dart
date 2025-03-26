@@ -10,39 +10,86 @@ class Details_Screen extends StatefulWidget {
 }
 
 class _DetailsScreenState extends State<Details_Screen> {
-
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // Controllers for text fields
+
   final TextEditingController _ageController = TextEditingController();
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _heightController = TextEditingController();
 
-  String? _selectedGender;  // To store dropdown value
+  String? _selectedGender; // To store dropdown value
+  String? _selectedActivityLevel; // To store activity level
 
 
-  void _SaveDetails() async{
-    try{
-      User? user  = _auth.currentUser;
-      if(user != null){
+  final Map<String, double> _activityFactors = {
+    'Sedentary (little/no exercise)': 1.2,
+    'Light exercise (1-3 days/week)': 1.375,
+    'Moderate exercise (3-5 days/week)': 1.55,
+    'Heavy exercise (6-7 days/week)': 1.725,
+    'Athlete (Twice per day intense training)': 1.9,
+  };
+
+
+  void _SaveDetails() async {
+    try {
+      User? user = _auth.currentUser;
+      if (user != null) {
+        final age = int.tryParse(_ageController.text.trim());
+        final weight = double.tryParse(_weightController.text.trim());
+        final height = double.tryParse(_heightController.text.trim());
+
+        // Validate inputs
+        if (_selectedGender == null ||
+            _selectedActivityLevel == null ||
+            age == null ||
+            weight == null ||
+            height == null ||
+            age <= 0 ||
+            weight <= 0 ||
+            height <= 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Please fill all fields with valid values')),
+          );
+          return;
+        }
+
+        // Step 1: Calculate BMR using Mifflin-St Jeor formula
+        double bmr;
+        if (_selectedGender == 'Male') {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
+        } else {
+          bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
+        }
+
+        // Step 2: Calculate TDEE by multiplying BMR by activity factor
+        final activityFactor = _activityFactors[_selectedActivityLevel]!;
+        final tdee = bmr * activityFactor;
+
+        // Step 3: Estimate sugar intake (e.g., 10% of TDEE calories as sugar)
+        // 1g of sugar = 4 calories, so sugar (g) = (TDEE * 0.10) / 4
+        final targetSugar = (tdee * 0.10) / 4;
+
+        // Save to Firestore
         await _firestore.collection('users').doc(user.uid).update({
           'gender': _selectedGender,
           'age': _ageController.text.trim(),
           'weight': _weightController.text.trim(),
           'height': _heightController.text.trim(),
+          'activityLevel': _selectedActivityLevel,
+          'targetSugar': targetSugar, // Save the calculated target sugar
           'updatedAt': FieldValue.serverTimestamp(),
         });
 
+
         Navigator.pushNamed(context, 'DashBoardScreen');
       }
-    }catch(e){
+    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error saving details: $e')),
       );
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +98,7 @@ class _DetailsScreenState extends State<Details_Screen> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SingleChildScrollView( // Wrapped Column in SingleChildScrollView
+          child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -94,6 +141,27 @@ class _DetailsScreenState extends State<Details_Screen> {
                   },
                   value: _selectedGender,
                 ),
+                SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  decoration: InputDecoration(
+                    prefixIcon: Icon(Icons.directions_run),
+                    hintText: "Activity Level",
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  items: _activityFactors.keys.map((String level) {
+                    return DropdownMenuItem<String>(
+                      value: level,
+                      child: Text(level),
+                    );
+                  }).toList(),
+                  onChanged: (value) {
+                    setState(() {
+                      _selectedActivityLevel = value;
+                    });
+                  },
+                  value: _selectedActivityLevel,
+                ),
+
                 SizedBox(height: 16),
                 TextField(
                   controller: _ageController,
@@ -158,11 +226,15 @@ class _DetailsScreenState extends State<Details_Screen> {
                   height: 56,
                   child: ElevatedButton(
                     onPressed: () {
-                      if(_selectedGender !=null && _ageController.text.isNotEmpty && _weightController.text.isNotEmpty && _heightController.text.isNotEmpty){
+                      if (_selectedGender != null &&
+                          _selectedActivityLevel != null &&
+                          _ageController.text.isNotEmpty &&
+                          _weightController.text.isNotEmpty &&
+                          _heightController.text.isNotEmpty) {
                         _SaveDetails();
-                      }else{
+                      } else {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Please fill all feilds')),
+                          SnackBar(content: Text('Please fill all fields')),
                         );
                       }
                     },
@@ -180,7 +252,7 @@ class _DetailsScreenState extends State<Details_Screen> {
                     ),
                   ),
                 ),
-                SizedBox(height: 20), // Extra space to prevent cut-off
+                SizedBox(height: 20),
               ],
             ),
           ),

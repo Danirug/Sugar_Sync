@@ -66,7 +66,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _barcodeController = TextEditingController();
-  final TextEditingController _targetSugarController = TextEditingController();
   String _sugarContent = '';
   String _barcodeSugarContent = '';
   bool _isLoading = false;
@@ -74,6 +73,9 @@ class _HomeScreenState extends State<HomeScreen> {
   double? _targetSugar; // Starts as null until user sets it
   double _consumedSugar = 0.0; // Starts at 0
   bool _targetSet = false; // Tracks if target has been set
+  Map<String, double> _WeeklySugar = {};
+  String _firstName = 'User';
+  String _lastName = '';
 
   @override
   void initState() {
@@ -93,6 +95,11 @@ class _HomeScreenState extends State<HomeScreen> {
           _targetSugar = data['targetSugar']?.toDouble();
           _consumedSugar = data['consumedSugar']?.toDouble() ?? 0.0;
           _targetSet = _targetSugar != null; // Target is set if it exists in Firestore
+          _WeeklySugar = Map<String, double>.from(data['weeklySugar'] ?? {});
+          final todayIndex = (DateTime.now().weekday - 1).toString();
+          _consumedSugar = _WeeklySugar[todayIndex] ?? 0.0;
+          _firstName = data['firstName'] ?? 'User';
+          _lastName = data['lastName'] ?? '';
         });
       }
     }
@@ -103,9 +110,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
       final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final todayIndex = (DateTime.now().weekday - 1).toString();
+      _WeeklySugar[todayIndex] = _consumedSugar; // Update today's sugar
       await docRef.set({
         'targetSugar': _targetSugar,
         'consumedSugar': _consumedSugar,
+        'weeklySugar': _WeeklySugar,
       }, SetOptions(merge: true)); // Merge to avoid overwriting other fields
     }
   }
@@ -222,27 +232,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _setTargetSugar() {
-    final target = double.tryParse(_targetSugarController.text.trim());
-    if (target != null && target > 0) {
-      setState(() {
-        _targetSugar = target; // Set the target sugar
-        _targetSet = true; // Mark target as set
-        _saveSugarData(); // Save to Firestore
-      });
-      _targetSugarController.clear(); // Clear the input field
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter a valid positive number')),
-      );
-    }
-  }
-
   @override
   void dispose() {
     _productNameController.dispose();
     _barcodeController.dispose();
-    _targetSugarController.dispose();
     super.dispose();
   }
 
@@ -267,7 +260,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         style: TextStyle(fontSize: 18, color: Colors.black54),
                       ),
                       Text(
-                        "Stefani Wong",
+                        "$_firstName $_lastName",
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                     ],
@@ -311,10 +304,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           height: 140,
                           child: _targetSet // Only show progress bar if target is set
                               ? CircularProgressIndicator(
-                            value: _consumedSugar / _targetSugar!,
+                            value: (_consumedSugar / _targetSugar!).clamp(0.0, 1.0),
                             strokeWidth: 12,
                             backgroundColor: Colors.grey[200],
-                            valueColor: AlwaysStoppedAnimation(Colors.blue),
+                            valueColor: AlwaysStoppedAnimation(
+                              _consumedSugar > _targetSugar! ? Colors.red : Colors.blue,
+                            ),
                           )
                               : Container(
                             decoration: BoxDecoration(
@@ -324,8 +319,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           ), // Placeholder circle when target not set
                         ),
                         Text(
-                          _targetSet ? "${_targetSugar!.toStringAsFixed(0)}g" : "Set Target",
-                          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                            _targetSet ? "${_consumedSugar.toStringAsFixed(0)}g" : "Set Target",
+                            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)
                         ),
                       ],
                     ),
@@ -374,15 +369,27 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text("Left", style: TextStyle(fontSize: 14)),
+                                Text(
+                                  _targetSet && _consumedSugar > _targetSugar!
+                                      ?"Over"
+                                      :"Left",
+                                  style: TextStyle(fontSize: 14),
+                                ),
                                 SizedBox(height: 4),
                                 Text(
-                                  _targetSet ? "${(_targetSugar! - _consumedSugar).clamp(0, double.infinity).toStringAsFixed(0)}g" : "",
+                                  _targetSet
+                                    ? _consumedSugar > _targetSugar!
+                                        ?"${(_consumedSugar - _targetSugar!).toStringAsFixed(0)}g"
+                                        :"${(_targetSugar! - _consumedSugar).clamp(0, double.infinity).toStringAsFixed(0)}g"
+                                      : "",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
+                                    color: _targetSet && _consumedSugar >_targetSugar!
+                                      ? Colors.red
+                                        :Colors.black,
                                   ),
-                                ),
+                                )
                               ],
                             ),
                           ],
@@ -550,73 +557,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ],
                 ),
               ),
-
-              SizedBox(height: 20),
-              Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 4),
-                    ]),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "Set Target Sugar Intake",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: _targetSugarController,
-                            keyboardType: TextInputType.number,
-                            decoration: InputDecoration(
-                              hintText: "Enter target sugar (g)",
-                              hintStyle: TextStyle(color: Colors.black54),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black54),
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.black),
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12),
-                        IconButton(
-                          onPressed: _setTargetSugar,
-                          icon: Container(
-                            width: 45,
-                            height: 45,
-                            decoration: BoxDecoration(
-                              color: Colors.blue,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.check,
-                              color: Colors.white,
-                              size: 24,
-                            ),
-                          ),
-                        )
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-              /*SizedBox(height: 20),
-              Container(
-                padding: ,
-              )*/
-
             ],
           ),
         ),

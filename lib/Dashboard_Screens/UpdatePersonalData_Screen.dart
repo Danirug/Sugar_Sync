@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:g21285889_daniru_gihen/Dashboard_Screens/MainDashboard_Screen.dart';
 import 'package:g21285889_daniru_gihen/Dashboard_Screens/Insights_Screen.dart';
@@ -14,6 +16,90 @@ class _UpdateScreenState extends State<Update_Screen> {
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
+  bool _isLoading = false ;
+
+  @override
+  void initState(){
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async{
+    final user = FirebaseAuth.instance.currentUser;
+    if(user != null){
+      final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      final doc = await docRef.get();
+      if(doc.exists){
+        final data = doc.data()!;
+        setState(() {
+          firstNameController.text = data['firstName'] ?? '';
+          lastNameController.text = data['lastName'] ?? '';
+          weightController.text = data['weight']?.toString() ?? '';
+          heightController.text = data['height']?.toString() ?? '';
+        });
+      }
+    }
+  }
+
+  Future<void> _updateUserData()async{
+    final user = FirebaseAuth.instance.currentUser;
+    if(user == null){
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('no user logged in')),
+      );
+      return;
+    }
+    if (firstNameController.text.trim().isEmpty ||
+        lastNameController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('First name and last name are required')),
+      );
+      return;
+    }
+
+    final weight = double.tryParse(weightController.text.trim());
+    final height = double.tryParse(heightController.text.trim());
+
+    if (weight == null || height == null || weight <= 0 || height <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter valid weight and height')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      await docRef.set({
+        'firstName': firstNameController.text.trim(),
+        'lastName': lastNameController.text.trim(),
+        'weight': weight,
+        'height': height,
+      }, SetOptions(merge: true)); // Merge to avoid overwriting other fields
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Profile updated successfully')),
+      );
+
+      // Navigate back to Dashboard_Screen after update
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Dashboard_Screen()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error updating profile: $e')),
+      );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,13 +156,14 @@ class _UpdateScreenState extends State<Update_Screen> {
                 Icons.height,
               ),
               SizedBox(height: 30),
+
               _buildUpdateButton(),
+
               SizedBox(height: 20),
             ],
           ),
         ),
       ),
-      //bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
 
@@ -93,6 +180,9 @@ class _UpdateScreenState extends State<Update_Screen> {
               borderRadius: BorderRadius.circular(12),
               borderSide: BorderSide.none)
       ),
+      keyboardType: hintText == "Weight" || hintText == "Height"
+          ? TextInputType.number
+          : TextInputType.text,
     );
   }
 
@@ -118,31 +208,12 @@ class _UpdateScreenState extends State<Update_Screen> {
             elevation: 5,
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          onPressed: () {
-            // Add your update logic here
-          },
-          child: const Text("Update"),
+          onPressed: _isLoading? null : _updateUserData, // disables when button is loading 
+          child: _isLoading
+            ?CircularProgressIndicator(color: Colors.black)
+              :Text("update")
         ),
       ),
     );
   }
-
-  /*Widget _buildBottomNavigationBar(){
-    return BottomNavigationBar(
-      items: [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-        BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Insights"),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-      ],
-      currentIndex: 2,
-      selectedItemColor: Colors.black,
-      unselectedItemColor: Colors.grey,
-      onTap: (index) {
-        // Add navigation logic if needed
-
-      },
-    );
-  }*/
-
-
 }

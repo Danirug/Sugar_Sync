@@ -16,6 +16,7 @@ class SignUp_Screen extends StatefulWidget{
 
 class _SignUpScreenState extends State<SignUp_Screen> {
   final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _success = false;
@@ -34,6 +35,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
 
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'firstName': _firstNameController.text.trim(),
+          'lastName': _lastNameController.text.trim(),
           'email': _emailController.text.trim(),
           'createdAt': FieldValue.serverTimestamp(),
           'uid': userCredential.user!.uid,
@@ -103,6 +105,14 @@ class _SignUpScreenState extends State<SignUp_Screen> {
                       ),
                     ),
                     SizedBox(height:16),
+                    TextField(
+                        controller: _lastNameController,
+                        decoration: InputDecoration(
+                          hintText: 'Last Name',
+                          prefixIcon: Icon(Icons.person),
+                        )
+                    ),
+                    SizedBox(height: 16),
                     TextField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
