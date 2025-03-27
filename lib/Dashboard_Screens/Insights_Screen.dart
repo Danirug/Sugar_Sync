@@ -14,6 +14,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
   Map<String, double> _dailySugar = {}; // Store daily sugar data (e.g., {"2025-03-26": 20.0})
   List<double> _weeklySugarList = List.filled(7, 0.0); // Aggregated weekly sugar (Mon-Sun)
   double? _targetSugar;
+  String _firstName = "User";
+  String _lastName = "";
 
   @override
   void initState() {
@@ -31,6 +33,8 @@ class _InsightsScreenState extends State<InsightsScreen> {
         setState(() {
           _dailySugar = Map<String, double>.from(data['dailySugar'] ?? {});
           _targetSugar = data['targetSugar']?.toDouble();
+          _firstName = data['firstName'] ?? "User";
+          _lastName = data['lastName'] ?? "";
           _aggregateWeeklySugar(); // Aggregate daily data into weekly format
         });
       }
@@ -78,7 +82,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  "Stefani Wong",
+                  "$_firstName $_lastName",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 CircleAvatar(
