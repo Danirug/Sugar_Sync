@@ -115,6 +115,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _saveProductLog(String productName, double sugarAmount) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final todayDate = DateTime.now().toIso8601String().split('T')[0]; // sort the date in this format "2025-03-27"
+      final logRef = FirebaseFirestore.instance
+          .collection('product_logs')
+          .doc(user.uid)
+          .collection('logs')
+          .doc(); // Auto-generate a document ID for each log entry
+
+      await logRef.set({
+        'productName': productName,
+        'sugarAmount': sugarAmount,
+        'date': todayDate,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
   Future<Map<String, dynamic>?> _fetchProductData(Uri url, String errorMessagePrefix) async {
     try {
       final response = await http.get(url);
@@ -205,6 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _consumedSugar += sugar; // Add sugar (assuming 100g serving)
           _saveSugarData(); // Save to Firestore
         }
+        _saveProductLog(productNameFound, sugar);
         _searchResults = []; // Clear search results after selection
         _productNameController.clear(); // Clear the search bar
       });
