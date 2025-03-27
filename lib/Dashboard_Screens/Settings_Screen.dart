@@ -11,7 +11,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _isDarkMode = false;
 
   //Logout logic
   Future<void> _logout(BuildContext context) async{
@@ -58,18 +57,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             trailing: Icon(Icons.chevron_right),
             onTap: () {
               _showLogoutDialog(context);
-
-            },
-          ),
-
-          Divider(),
-
-          // Theme Toggle
-          SwitchListTile(
-            secondary: Icon(Icons.dark_mode_outlined),
-            title: Text('Theme'),
-            value: false,
-            onChanged: (bool value) {
 
             },
           ),

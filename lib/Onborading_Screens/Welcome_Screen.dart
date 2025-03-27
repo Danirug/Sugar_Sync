@@ -17,7 +17,7 @@ class Welcome_Screen extends StatelessWidget{
                   children: [
                     SizedBox(height: 50),
                     Text(
-                      'Welcome to Sugar Sync',
+                      'Welcome to Sync Sugar',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 32,

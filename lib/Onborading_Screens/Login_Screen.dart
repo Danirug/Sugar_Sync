@@ -33,7 +33,7 @@ class _login_ScreenState extends State<login_Screen> {
     }on FirebaseAuthException catch (e){
       print("login failed: ${e.code} - ${e.message}");
 
-      String errorMessage = 'An error occured, Please try again';
+      String errorMessage = 'Email or Password is Invalid Create an Account';
 
       if(e.code == 'user-not-found'){
         errorMessage = 'No account found with this email.';

@@ -20,7 +20,7 @@ class Splash_Screen extends StatelessWidget{
                 children: [
                   SizedBox(height: 300),
                   Text(
-                    'SugarSync.',
+                    'SyncSugar.',
                     style: TextStyle(
                       fontSize: 40,
                       fontWeight: FontWeight.bold,

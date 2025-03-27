@@ -179,6 +179,8 @@ class _DetailsScreenState extends State<Details_Screen> {
                     prefixIcon: Icon(Icons.calendar_today),
                     hintText: "Age",
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    fillColor: Colors.white,
+
                   ),
                 ),
                 SizedBox(height: 16),

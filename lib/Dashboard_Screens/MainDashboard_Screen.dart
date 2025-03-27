@@ -3,9 +3,9 @@ import 'package:g21285889_daniru_gihen/Dashboard_Screens/Insights_Screen.dart';
 import 'package:g21285889_daniru_gihen/Dashboard_Screens/Profile_Screen.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class Dashboard_Screen extends StatefulWidget {
   const Dashboard_Screen({super.key});
@@ -74,7 +74,8 @@ class _HomeScreenState extends State<HomeScreen> {
   double _consumedSugar = 0.0; // Starts at 0
   bool _targetSet = false; // Tracks if target has been set
   Map<String, double> _dailySugar = {};
-  Map<String, double> _WeeklySugar = {};
+  //Map<String, double> _WeeklySugar = {};
+  List<Map<String,dynamic>> _searchResults = [];
   String _firstName = 'User';
   String _lastName = '';
 
@@ -114,6 +115,26 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<Map<String, dynamic>?> _fetchProductData(Uri url, String errorMessagePrefix) async {
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        setState(() {
+          _barcodeSugarContent = '$errorMessagePrefix (Status: ${response.statusCode})';
+        });
+        return null;
+      }
+    } catch (e) {
+      setState(() {
+        _barcodeSugarContent = 'Error: $e';
+      });
+      return null;
+    }
+  }
+
   // Save sugar data to Firestore
   Future<void> _saveSugarData() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -140,31 +161,19 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _isLoading = true;
       _sugarContent = '';
+      _searchResults = [];
     });
     try {
       final encodedName = Uri.encodeComponent(productName);
-      final url = Uri.parse('https://world.openfoodfacts.org/cgi/search.pl?search_terms=$encodedName&search_simple=1&action=process&json=1');
+      final url = Uri.parse('https://world.openfoodfacts.net/cgi/search.pl?search_terms=$encodedName&search_simple=1&json=1');
 
       final response = await http.get(url);
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         if (data['products'] != null && data['products'].length > 0) {
-          final product = data['products'][0];
-          if (product['nutriments'] != null && product['nutriments']['sugars_100g'] != null) {
-            final sugar = product['nutriments']['sugars_100g'].toDouble();
-            final productNameFound = product['product_name'] ?? productName;
-            setState(() {
-              _sugarContent = 'Sugar Content for $productNameFound: $sugar g per 100g';
-              if (_targetSet) {
-                _consumedSugar += sugar; // Add sugar (assuming 100g serving)
-                _saveSugarData(); // Save to Firestore
-              }
-            });
-          } else {
-            setState(() {
-              _sugarContent = 'Sugar content not found for this product';
-            });
-          }
+         setState(() {
+           _searchResults = List<Map<String, dynamic>>.from(data['products']);
+         });
         } else {
           setState(() {
             _sugarContent = 'No products found with that name';
@@ -186,6 +195,28 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _logProduct(Map<String, dynamic> product){
+    if (product['nutriments'] != null && product['nutriments']['sugars_100g'] != null) {
+      final sugar = product['nutriments']['sugars_100g'].toDouble();
+      final productNameFound = product['product_name'] ?? 'Unknown Product';
+      setState(() {
+        _sugarContent = 'Sugar Content for $productNameFound: $sugar g per 100g';
+        if (_targetSet) {
+          _consumedSugar += sugar; // Add sugar (assuming 100g serving)
+          _saveSugarData(); // Save to Firestore
+        }
+        _searchResults = []; // Clear search results after selection
+        _productNameController.clear(); // Clear the search bar
+      });
+    } else {
+      setState(() {
+        _sugarContent = 'Sugar content not found for this product';
+        _searchResults = []; // Clear search results
+        _productNameController.clear(); // Clear the search bar
+      });
+    }
+  }
+
   Future<void> _fetchSugarContentByBarcode() async {
     final barcode = _barcodeController.text.trim();
     if (barcode.isEmpty) {
@@ -198,47 +229,33 @@ class _HomeScreenState extends State<HomeScreen> {
       _isBarcodeLoading = true;
       _barcodeSugarContent = '';
     });
-    try {
-      final url = Uri.parse('https://world.openfoodfacts.org/api/v2/product/$barcode.json');
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['status'] == 1 && data['product'] != null) {
-          final nutriments = data['product']['nutriments'];
-          if (nutriments != null && nutriments.containsKey('sugars_100g')) {
-            final sugar = nutriments['sugars_100g'].toDouble();
-            final productName = data['product']['product_name'] ?? 'Unknown Product';
-            setState(() {
-              _barcodeSugarContent = 'Sugar Content for $productName: $sugar g per 100g';
-              if (_targetSet) {
-                _consumedSugar += sugar; // Add sugar (assuming 100g serving)
-                _saveSugarData(); // Save to Firestore
-              }
-            });
-          } else {
-            setState(() {
-              _barcodeSugarContent = 'Sugar content not found for this barcode';
-            });
-          }
+
+    final url = Uri.parse('https://world.openfoodfacts.org/api/v2/product/$barcode.json');
+    final data = await _fetchProductData(url, 'Error: Failed to fetch product data');
+
+    if (data != null) {
+      if (data['status'] == 1 && data['product'] != null) {
+        final product = data['product'];
+        if (product['nutriments'] != null && product['nutriments'].containsKey('sugars_100g')) {
+          _logProduct(product); // Reuse _logProduct to log the sugar content
+          setState(() {
+            _barcodeSugarContent = _sugarContent; // Use the same message format
+          });
         } else {
           setState(() {
-            _barcodeSugarContent = 'Product not found for this barcode';
+            _barcodeSugarContent = 'Sugar content not found for this barcode';
           });
         }
       } else {
         setState(() {
-          _barcodeSugarContent = 'Error: Failed to fetch product data (Status: ${response.statusCode})';
+          _barcodeSugarContent = 'Product not found for this barcode';
         });
       }
-    } catch (e) {
-      setState(() {
-        _barcodeSugarContent = 'Error: $e';
-      });
-    } finally {
-      setState(() {
-        _isBarcodeLoading = false;
-      });
     }
+
+    setState(() {
+      _isBarcodeLoading = false;
+    });
   }
 
   @override
@@ -387,15 +404,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                 SizedBox(height: 4),
                                 Text(
                                   _targetSet
-                                    ? _consumedSugar > _targetSugar!
-                                        ?"${(_consumedSugar - _targetSugar!).toStringAsFixed(0)}g"
-                                        :"${(_targetSugar! - _consumedSugar).clamp(0, double.infinity).toStringAsFixed(0)}g"
+                                      ? _consumedSugar > _targetSugar!
+                                      ?"${(_consumedSugar - _targetSugar!).toStringAsFixed(0)}g"
+                                      :"${(_targetSugar! - _consumedSugar).clamp(0, double.infinity).toStringAsFixed(0)}g"
                                       : "",
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     color: _targetSet && _consumedSugar >_targetSugar!
-                                      ? Colors.red
+                                        ? Colors.red
                                         :Colors.black,
                                   ),
                                 )
@@ -459,7 +476,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
-                              Icons.add,
+                              Icons.search,
                               color: Colors.white,
                               size: 24,
                             ),
@@ -474,9 +491,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: CircularProgressIndicator(),
                         ),
                       )
-                    else if (_sugarContent.isNotEmpty)
+                    else if (_searchResults.isNotEmpty)
+                      Container(
+                        constraints: BoxConstraints(maxHeight: 200),
+                        child: ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: _searchResults.length,
+                          itemBuilder: (context, index){
+                            final product = _searchResults[index];
+                            final productName = product['product_name']??'Unknown Product';
+                            return ListTile(
+                              title: Text(
+                                productName,
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              onTap: () => _logProduct(product),
+                            );
+                          },
+                        ),
+                      )
+                    else if(_sugarContent.isNotEmpty)
                       Padding(
-                        padding: const EdgeInsets.only(top: 16.0),
+                        padding: EdgeInsets.only(top: 16.0),
                         child: Text(
                           _sugarContent,
                           style: TextStyle(
@@ -484,7 +520,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                      ),
+                      )
                   ],
                 ),
               ),
@@ -573,3 +609,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
