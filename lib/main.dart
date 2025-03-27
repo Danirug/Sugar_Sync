@@ -31,14 +31,14 @@ void main() async {
     await Firebase.initializeApp();
   }
   OpenFoodAPIConfiguration.userAgent = UserAgent(
-    name: 'SugarSync',
+    name: 'SyncSugar',
     version: '1.0.0',
   );
-  runApp(const SugarSync());
+  runApp(const SyncSugar());
 }
 
-class SugarSync extends StatelessWidget {
-  const SugarSync({super.key});
+class SyncSugar extends StatelessWidget {
+  const SyncSugar({super.key});
 
   @override
   Widget build(BuildContext context){
