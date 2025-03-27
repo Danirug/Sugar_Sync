@@ -21,6 +21,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _success = false;
   String _userEmail = '';
+  bool _obscurePassword = true;
   bool _acceptTerms = false;
 
   void _register() async{
@@ -119,16 +120,56 @@ class _SignUpScreenState extends State<SignUp_Screen> {
                       controller: _firstNameController,
                       decoration: InputDecoration(
                         hintText: 'First Name',
-                        prefixIcon: Icon(Icons.person),
+                        prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:  BorderSide(
+                            color: Colors.grey,
+                            width: 0.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Color(0xFF3498DB),
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height:16),
                     TextField(
-                        controller: _lastNameController,
-                        decoration: InputDecoration(
-                          hintText: 'Last Name',
-                          prefixIcon: Icon(Icons.person),
-                        )
+                      controller: _lastNameController,
+                      decoration: InputDecoration(
+                        hintText: 'Last Name',
+                        prefixIcon: Icon(Icons.person_outline, color: Colors.grey),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:  BorderSide(
+                            color: Colors.grey,
+                            width: 0.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Color(0xFF3498DB),
+                            width: 2,
+                          ),
+                        ),
+                      ),
                     ),
                     SizedBox(height: 16),
                     TextField(
@@ -136,16 +177,67 @@ class _SignUpScreenState extends State<SignUp_Screen> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Email',
-                        prefixIcon: Icon(Icons.email_outlined),
+                        prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide:  BorderSide(
+                            color: Colors.grey,
+                            width: 0.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(
+                            color: Color(0xFF3498DB),
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ),
                     SizedBox(height: 16),
                     TextField(
                       controller: _passwordController,
-                      obscureText: true,
+                      obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                          hintText: 'Password',
-                          prefixIcon: Icon(Icons.lock_outline)
+                        hintText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                        suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                              color: Colors.grey,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword; // Toggle the visibility
+                              });
+                            }
+                        ),
+                        filled: true,
+                        fillColor: Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide.none,
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Colors.grey,
+                            width: 0.5,
+                          ),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: const BorderSide(
+                            color: Color(0xFF3498DB),
+                            width: 2,
+                          ),
+                        ),
                       ),
                     ),
                     Row(

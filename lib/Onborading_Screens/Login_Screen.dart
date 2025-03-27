@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
+
 class login_Screen extends StatefulWidget {
   const login_Screen({super.key});
 
@@ -9,12 +10,12 @@ class login_Screen extends StatefulWidget {
   _login_ScreenState createState() => _login_ScreenState();
 }
 
-
 class _login_ScreenState extends State<login_Screen> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  bool _obscurePassword = true;
 
   void _login() async{
     setState(() {
@@ -98,17 +99,68 @@ class _login_ScreenState extends State<login_Screen> {
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
-                      hintText:'Email',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      hintText: 'Email',
+                      prefixIcon: Icon(Icons.email_outlined, color: Colors.grey),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide:  BorderSide(
+                          color: Colors.grey,
+                          width: 0.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(
+                          color: Color(0xFF3498DB),
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
                   TextField(
                     controller: _passwordController,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
                     decoration: InputDecoration(
                       hintText: 'Password',
-                      prefixIcon: Icon(Icons.lock_outline),
+                      prefixIcon: const Icon(Icons.lock_outline, color: Colors.grey),
+                      suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                            color: Colors.grey,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword; // Toggle the visibility
+                            });
+                          }
+                      ),
+                      filled: true,
+                      fillColor: Colors.white,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Colors.grey,
+                          width: 0.5,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(
+                          color: Color(0xFF3498DB),
+                          width: 2,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(height: 16),
@@ -160,7 +212,7 @@ class _login_ScreenState extends State<login_Screen> {
                     alignment: Alignment.center,
                     child: TextButton(
                       onPressed: (){
-                        print('button pressed');
+                        //print('button pressed'); this is to check weather the button worked
                         Navigator.pushNamed(context, 'SignupScreen');
                       },
                       child: Text('Don\'t have and account yet? Register'),
