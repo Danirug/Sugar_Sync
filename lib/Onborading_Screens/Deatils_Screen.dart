@@ -80,8 +80,6 @@ class _DetailsScreenState extends State<Details_Screen> {
           'targetSugar': targetSugar, // Save the calculated target sugar
           'updatedAt': FieldValue.serverTimestamp(),
         });
-
-
         Navigator.pushNamed(context, 'DashBoardScreen');
       }
     } catch (e) {

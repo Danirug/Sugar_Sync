@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class login_Screen extends StatefulWidget {
   const login_Screen({super.key});
@@ -29,7 +28,10 @@ class _login_ScreenState extends State<login_Screen> {
       print("login succesfull");
       //if successful navigate to the main dashboard
       //put the route screen here
-      Navigator.pushNamed(context, 'DashBoardScreen');
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+      Navigator.pushReplacementNamed(context, 'DashBoardScreen');
+      //Navigator.pushNamed(context, 'DashBoardScreen');
     }on FirebaseAuthException catch (e){
       print("login failed: ${e.code} - ${e.message}");
 
