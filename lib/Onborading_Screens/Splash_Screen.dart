@@ -1,84 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:async';
 
-
-
-class Splash_Screen extends StatelessWidget{
+class Splash_Screen extends StatefulWidget {
   const Splash_Screen({super.key});
 
   @override
-  Widget build(BuildContext context){
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+
+class _SplashScreenState extends State <Splash_Screen> with SingleTickerProviderStateMixin{
+  late AnimationController _animationController;
+  late Animation<double> _progressAnimation;
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    );
+    _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.linear,
+      ),
+    );
+    _animationController.forward();
+    _checkLoginStateAndNavigate();
+  }
+
+  Future<void> _checkLoginStateAndNavigate() async{
+    // Add a delay to show the splash screen for a few seconds
+    await Future.delayed(Duration(seconds: 5));
+
+    // Check if the user is logged in
+    final prefs = await SharedPreferences.getInstance();
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+    // Navigate based on login state
+    if (isLoggedIn) {
+      Navigator.pushReplacementNamed(context, 'DashBoardScreen');
+    } else {
+      Navigator.pushReplacementNamed(context, 'WelcomeScreen');
+    }
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Color(0xFFCCF4E6),
-      body: SafeArea(
+      body: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              //logo
               Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(height: 300),
-                  Text(
-                    'SugarSync.',
-                    style: TextStyle(
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
+                  Image.asset(
+                    'Assets/Logo01.png',
+                    height: 500,
+                    fit: BoxFit.contain,
                   ),
-                  SizedBox(height: 8),
+                  SizedBox(height: 5),
                   Text(
                     'SIMPLIFY YOUR HEALTH, SYNC YOUR LIFE',
                     style: TextStyle(
-                      fontSize: 12,
-                      letterSpacing: 1.2,
+                      fontSize: 14,
+                      letterSpacing: 1.5,
                       color: Colors.black54,
+                      fontWeight: FontWeight.w500,
                     ),
+                    textAlign: TextAlign.center,
                   ),
+                  SizedBox(height: 30),
+                  AnimatedBuilder(
+                    animation: _progressAnimation,
+                    builder: (context, child){
+                      return LinearProgressIndicator(
+                        value: _progressAnimation.value,
+                        backgroundColor: Colors.black12,
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
+                      );
+                    },
+                  )
                 ],
               ),
-
-              //button
-              Padding(
-                padding: const EdgeInsets.only(bottom: 50.0),
-                child: Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF3498DB),
-                        Color(0xFF1C5175),
-                      ],
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                  ),
-                  child: ElevatedButton(
-                    onPressed: (){
-                      Navigator.pushNamed(context, 'WelcomeScreen');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      foregroundColor: Colors.white,
-                      minimumSize: Size(double.infinity, 56),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(28),
-                      ),
-                      elevation: 0,
-                    ),
-                    child: Text(
-                      'Get Started',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600
-                      ),
-                    ),
-                  ),
-                ),
-              )
             ],
           ),
         ),
