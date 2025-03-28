@@ -3,14 +3,17 @@ import 'package:flutter/material.dart';
 class Welcome_Screen extends StatelessWidget{
   const Welcome_Screen({super.key});
 
+  //Building the UI for Welcome Screen
   @override
   Widget build(BuildContext context){
     return Scaffold(
       backgroundColor: Color(0xFFCCF4E6),
       body: SafeArea(
         child: Padding(
+          // Adding horizontal padding to content
             padding: const EdgeInsets.symmetric(horizontal: 24.0),
             child: Column(
+              // Spacing content vertically between top and bottom
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
@@ -34,6 +37,7 @@ class Welcome_Screen extends StatelessWidget{
                     )
                   ],
                 ),
+                // Lower section with navigation buttons
                 Column(
                   children: [
                     Container(

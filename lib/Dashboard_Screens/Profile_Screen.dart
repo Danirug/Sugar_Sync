@@ -10,19 +10,23 @@ class ProfileScreen extends StatefulWidget {
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
+// Stateful widget for Profile Screen
 class _ProfileScreenState extends State<ProfileScreen> {
+  // User data variables with default values
   String _firstName = 'User';
   String _lastName = '';
   String _height = '';
   String _weight = '';
   String _sugarIntake = '';
 
+  // Initialize state and load user data
   @override
   void initState(){
     super.initState();
     _loadUserData();
   }
 
+  // Load user data from Firestore
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -31,6 +35,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       if (doc.exists) {
         final data = doc.data()!;
         setState(() {
+          // Update state with user data or defaults
           _firstName = data['firstName'] ?? 'User';
           _lastName = data['lastName'] ?? '';
           _height = data['height']?.toString() ?? 'N/A';
@@ -156,6 +161,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  //helper method to navigate
   Widget _buildListItem(BuildContext context, IconData icon, String title) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8),
@@ -186,11 +192,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Icon(Icons.chevron_right, size: 24, color: Colors.black54),
           ],
         ),
-      ), // Moved child inside TextButton
+      ),
     );
   }
 }
-
+//helper method to build divider
 Widget _buildDivider() {
   return Divider(
     thickness: 2,

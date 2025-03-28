@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
+// Initializing Firebase instances
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
@@ -15,25 +15,31 @@ class SignUp_Screen extends StatefulWidget{
 }
 
 class _SignUpScreenState extends State<SignUp_Screen> {
+  // Controllers for text input fields
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _lastNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  bool _success = false;
-  String _userEmail = '';
-  bool _obscurePassword = true;
-  bool _acceptTerms = false;
 
+  // State variables
+  bool _success = false; // Tracks registration success
+  String _userEmail = ''; // Stores registered user's email
+  bool _obscurePassword = true; // Controls password visibility
+  bool _acceptTerms = false; // Tracks terms acceptance
+
+
+  // Method to handle user registration
   void _register() async{
     try{
-      final UserCredential userCredential =
-      await _auth.createUserWithEmailAndPassword(
+      // Creating new user with email and password
+      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
       if(userCredential.user != null) {
+        // Updating user's display name
         await userCredential.user!.updateDisplayName(_firstNameController.text.trim());
-
+        //Storing user data in firestore
         await _firestore.collection('users').doc(userCredential.user!.uid).set({
           'firstName': _firstNameController.text.trim(),
           'lastName': _lastNameController.text.trim(),
@@ -41,6 +47,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
           'createdAt': FieldValue.serverTimestamp(),
           'uid': userCredential.user!.uid,
         });
+        //update the state upon successful resgitration
         setState(() {
           _success = true;
           _userEmail = userCredential.user!.email!;
@@ -48,6 +55,7 @@ class _SignUpScreenState extends State<SignUp_Screen> {
         Navigator.pushNamed(context, 'DetailsScreen');
       }
     } on FirebaseAuthException catch (e){
+      // Handling Firebase-specific errors
       setState(() {
         _success = false;
       });
@@ -57,11 +65,13 @@ class _SignUpScreenState extends State<SignUp_Screen> {
       );
     }catch(e){
       ScaffoldMessenger.of(context).showSnackBar(
+        // Handling unexpected errors
           SnackBar(content: Text('An unexpected error occurred: $e')),
       );
     }
   }
 
+  //building the UI
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -316,6 +326,5 @@ class _SignUpScreenState extends State<SignUp_Screen> {
   }
 }
 
-//Navigator.pushNamed(context, 'DetailsScreen');
 
 

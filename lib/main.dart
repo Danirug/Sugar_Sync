@@ -1,3 +1,4 @@
+//Importing ncessary packages
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,9 +14,11 @@ import 'package:g21285889_daniru_gihen/Dashboard_Screens/Settings_Screen.dart';
 import 'package:g21285889_daniru_gihen/Onborading_Screens/Forgot_password.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
+//Entry point of the application
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
+    // Web-specific Firebase initialization with configuration options
     await Firebase.initializeApp(
       options: const FirebaseOptions(
           apiKey: "AIzaSyBzmUaF-1K_K12Q5cD7FC9WdGU_76sTuCU",
@@ -30,22 +33,26 @@ void main() async {
     // Firebase initialization for mobile
     await Firebase.initializeApp();
   }
+  // Configuring OpenFoodFacts API user agent
   OpenFoodAPIConfiguration.userAgent = UserAgent(
     name: 'SyncSugar',
     version: '1.0.0',
   );
+  // Starting the Flutter application
   runApp(const SyncSugar());
 }
 
 class SyncSugar extends StatelessWidget {
   const SyncSugar({super.key});
 
+  //building the application UI
   @override
   Widget build(BuildContext context){
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-        initialRoute:"SplashScreen",
+        initialRoute:"SplashScreen", // setting initial route of the app
         routes: {
+        //Screen Routes
           "SplashScreen":(context)=>Splash_Screen(),
           "WelcomeScreen":(context)=>Welcome_Screen(),
           "loginScreen":(context)=>login_Screen(),

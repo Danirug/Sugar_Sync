@@ -18,6 +18,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
   String _firstName = "User";
   String _lastName = "";
 
+  // Initialize state and load data
   @override
   void initState() {
     super.initState();
@@ -25,6 +26,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     _loadProductLogs();
   }
 
+  // Load product logs from Firestore
   Future<void> _loadProductLogs()async{
     final user = FirebaseAuth.instance.currentUser;
     if(user != null){
@@ -32,7 +34,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
           .collection('product_logs')
           .doc(user.uid)
           .collection('logs')
-          .orderBy('timestamp', descending: true);
+          .orderBy('timestamp', descending: true);// Sort by latest first
 
       final querySnapshot = await logsRef.get();
       setState(() {
@@ -41,6 +43,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
   }
 
+// Load sugar data from Firestore
   Future<void> _loadSugarData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -53,19 +56,20 @@ class _InsightsScreenState extends State<InsightsScreen> {
           _targetSugar = data['targetSugar']?.toDouble();
           _firstName = data['firstName'] ?? "User";
           _lastName = data['lastName'] ?? "";
-          _aggregateWeeklySugar(); // Aggregate daily data into weekly format
+          _aggregateWeeklySugar(); // Process daily data into weekly format
         });
       }
     }
   }
 
+  // Aggregate daily sugar into weekly format
   void _aggregateWeeklySugar() {
     // Reset weekly sugar list
-    _weeklySugarList = List.filled(7, 0.0);
+    _weeklySugarList = List.filled(7, 0.0);// Reset weekly list
 
     // Get the start of the current week (Monday)
     final now = DateTime.now();
-    final daysSinceMonday = now.weekday - 1; // Monday is 1, so daysSinceMonday is 0 for Monday
+    final daysSinceMonday = now.weekday - 1; // Calculate days from Monday
     final startOfWeek = now.subtract(Duration(days: daysSinceMonday));
 
     // Aggregate sugar for each day of the current week
@@ -78,6 +82,7 @@ class _InsightsScreenState extends State<InsightsScreen> {
     }
   }
 
+  //Build the UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -273,13 +278,13 @@ class _InsightsScreenState extends State<InsightsScreen> {
           BarChartRodData(
             toY: sugarValue,
             color: _targetSugar != null && sugarValue > _targetSugar!
-                ? Colors.red
-                : Colors.purple[300],
+                ? Colors.red // red if over target
+                : Colors.purple[300], //purple otherwise
             width: 20,
             borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
             backDrawRodData: BackgroundBarChartRodData(
               show: true,
-              toY: 150,
+              toY: 150, // background bar height
               color: Colors.grey[200],
             ),
           ),

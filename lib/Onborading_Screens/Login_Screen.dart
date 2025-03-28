@@ -10,17 +10,21 @@ class login_Screen extends StatefulWidget {
 }
 
 class _login_ScreenState extends State<login_Screen> {
+  //Text controllers for input feilds
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;// Firebase Authentication instance
+  // State variables
   bool _isLoading = false;
   bool _obscurePassword = true;
 
+  //Method to handle user login
   void _login() async{
     setState(() {
-      _isLoading = true;
+      _isLoading = true;// Show loading state
     });
     try{
+      // Attempt to sign in with email and password
       await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
@@ -30,11 +34,12 @@ class _login_ScreenState extends State<login_Screen> {
       //put the route screen here
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
+      // Navigate to dashboard, replacing current route
       Navigator.pushReplacementNamed(context, 'DashBoardScreen');
       //Navigator.pushNamed(context, 'DashBoardScreen');
     }on FirebaseAuthException catch (e){
       print("login failed: ${e.code} - ${e.message}");
-
+      // Default error message
       String errorMessage = 'Email or Password is Invalid Create an Account';
 
       if(e.code == 'user-not-found'){
@@ -48,12 +53,14 @@ class _login_ScreenState extends State<login_Screen> {
       );
     } finally{
       setState(() {
-        _isLoading = false;
+        _isLoading = false; // hide loading state
       });
     }
   }
 
 
+
+  //Building the UI
   @override
   Widget build(BuildContext context){
     return Scaffold(

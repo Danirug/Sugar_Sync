@@ -115,6 +115,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Save product log to Firestore
   Future<void> _saveProductLog(String productName, double sugarAmount) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -134,6 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+// Fetch product data from API
   Future<Map<String, dynamic>?> _fetchProductData(Uri url, String errorMessagePrefix) async {
     try {
       final response = await http.get(url);
@@ -169,6 +171,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  //Search product by name using OpenFoodFacts API using endpoints
   Future<void> _searchProductByName() async {
     final productName = _productNameController.text.trim();
     if (productName.isEmpty) {
@@ -214,6 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+// Log selected product and update sugar consumption
   void _logProduct(Map<String, dynamic> product){
     if (product['nutriments'] != null && product['nutriments']['sugars_100g'] != null) {
       final sugar = product['nutriments']['sugars_100g'].toDouble();
@@ -237,6 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Fetch sugar content by barcode using Open Food Facts API
   Future<void> _fetchSugarContentByBarcode() async {
     final barcode = _barcodeController.text.trim();
     if (barcode.isEmpty) {
@@ -278,6 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  // Clean up controllers
   @override
   void dispose() {
     _productNameController.dispose();

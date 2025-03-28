@@ -15,12 +15,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
   //Logout logic
   Future<void> _logout(BuildContext context) async{
     try{
+      // Sign out the current user
       await FirebaseAuth.instance.signOut();
+      // Navigate to Welcome Screen and remove all previous routes
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (context) => Welcome_Screen()),
           (Route<dynamic> route) => false,
       );
     }catch(e){
+      // Show error message if logout fails
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error logging out: $e')),
       );
@@ -34,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appBar: AppBar(
         title:  Text('Settings'),
         backgroundColor: Colors.transparent,
-        elevation: 0,
+        elevation: 0, // remove app bar shadow
       ),
       body: Column(
         children: [
@@ -42,21 +45,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ListTile(
             leading: Icon(Icons.privacy_tip_outlined),
             title: Text('Privacy Policy'),
-            trailing:Icon(Icons.chevron_right),
+            trailing:Icon(Icons.chevron_right),// Trailing arrow
             onTap: () {
 
             },
           ),
 
-          Divider(),
+          Divider(),// Separator between list items
 
           // Log Out
           ListTile(
             leading: Icon(Icons.logout_outlined),
             title: Text('Log out'),
-            trailing: Icon(Icons.chevron_right),
+            trailing: Icon(Icons.chevron_right),// Trailing arrow
             onTap: () {
-              _showLogoutDialog(context);
+              _showLogoutDialog(context);//show confirmation dialog
 
             },
           ),
@@ -65,7 +68,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-
+// Show logout confirmation dialog
   void _showLogoutDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -74,17 +77,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: Text('Log Out'),
           content: Text('Are you sure you want to log out?'),
           actions: [
+            // Cancel button
             TextButton(
               child:Text('Cancel'),
               onPressed: () {
-                Navigator.of(context).pop();
+                Navigator.of(context).pop();// Close dialog
               },
             ),
             TextButton(
               child: Text('Log Out'),
               onPressed: () {
-                Navigator.of(context).pop();
-                _logout(context);
+                Navigator.of(context).pop();// Close dialog
+                _logout(context);// Perform logout
               },
             ),
           ],

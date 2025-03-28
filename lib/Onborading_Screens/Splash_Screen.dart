@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
 
+// Stateful widget for the Splash Screen
 class Splash_Screen extends StatefulWidget {
   const Splash_Screen({super.key});
 
@@ -9,7 +10,7 @@ class Splash_Screen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-
+// State class for Splash Screen with animation
 class _SplashScreenState extends State <Splash_Screen> with SingleTickerProviderStateMixin{
   late AnimationController _animationController;
   late Animation<double> _progressAnimation;
@@ -17,17 +18,19 @@ class _SplashScreenState extends State <Splash_Screen> with SingleTickerProvider
   void initState() {
     super.initState();
     _animationController = AnimationController(
+      // Setting up animation controller with 5-second duration
       vsync: this,
       duration: const Duration(seconds: 5),
     );
+    // Creating linear progress animation from 0 to 1
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.linear,
       ),
     );
-    _animationController.forward();
-    _checkLoginStateAndNavigate();
+    _animationController.forward();//Starting animation
+    _checkLoginStateAndNavigate();// Checking login state and navigating
   }
 
   Future<void> _checkLoginStateAndNavigate() async{
@@ -35,8 +38,8 @@ class _SplashScreenState extends State <Splash_Screen> with SingleTickerProvider
     await Future.delayed(Duration(seconds: 5));
 
     // Check if the user is logged in
-    final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final prefs = await SharedPreferences.getInstance();// Getting instance of shared preferences
+    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;// Checking if user is logged in, defaulting to false if not set
 
     // Navigate based on login state
     if (isLoggedIn) {
@@ -82,8 +85,10 @@ class _SplashScreenState extends State <Splash_Screen> with SingleTickerProvider
                     animation: _progressAnimation,
                     builder: (context, child){
                       return LinearProgressIndicator(
+                        // Current value of progress animation
                         value: _progressAnimation.value,
                         backgroundColor: Colors.black12,
+                        // Progress color
                         valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3498DB)),
                       );
                     },

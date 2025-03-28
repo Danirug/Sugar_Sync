@@ -9,11 +9,14 @@ class ForgotPassword extends StatefulWidget {
 }
 
 class _ForgotPasswordState extends State<ForgotPassword> {
+  // Controller for email input
   final TextEditingController _emailController = TextEditingController();
+  // Loading state indicator
   bool _isLoading = false;
 
   // Function to send password reset email
   Future<void> _sendPasswordResetEmail() async {
+    // Check if email field is empty
     if (_emailController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
        SnackBar(content: Text('Please enter your email')),
@@ -21,23 +24,29 @@ class _ForgotPasswordState extends State<ForgotPassword> {
       return;
     }
 
+    // Set loading state to true
     setState(() {
       _isLoading = true;
     });
 
     try {
+      // Send password reset email using Firebase Auth
       await FirebaseAuth.instance.sendPasswordResetEmail(
         email: _emailController.text.trim(),
       );
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Password reset email sent. Check your inbox.')),
       );
+      // Navigate back to previous screen
       Navigator.pop(context);
     } catch (e) {
+      // Show error message if sending fails
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error sending reset email: $e')),
       );
     } finally {
+      // Reset loading state
       setState(() {
         _isLoading = false;
       });
@@ -45,11 +54,13 @@ class _ForgotPasswordState extends State<ForgotPassword> {
   }
 
   @override
+  // Clean up resources when widget is removed
   void dispose() {
     _emailController.dispose();
     super.dispose();
   }
 
+  // Build the UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -156,10 +167,10 @@ class _ForgotPasswordState extends State<ForgotPassword> {
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    onPressed: _isLoading ? null : _sendPasswordResetEmail,
+                    onPressed: _isLoading ? null : _sendPasswordResetEmail,// Disable when loading
                     child: _isLoading
-                        ? CircularProgressIndicator(color: Colors.white)
-                        : Text("Reset Password"),
+                        ? CircularProgressIndicator(color: Colors.white)// Show loading indicator
+                        : Text("Reset Password"),// Show button text
                   ),
                 ),
               ),

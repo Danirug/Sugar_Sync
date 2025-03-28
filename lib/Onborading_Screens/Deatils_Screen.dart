@@ -54,7 +54,7 @@ class _DetailsScreenState extends State<Details_Screen> {
           return;
         }
 
-        // Step 1: Calculate BMR using Mifflin-St Jeor formula
+        // 1.Calculate BMR using Mifflin-St Jeor formula
         double bmr;
         if (_selectedGender == 'Male') {
           bmr = (10 * weight) + (6.25 * height) - (5 * age) + 5;
@@ -62,11 +62,11 @@ class _DetailsScreenState extends State<Details_Screen> {
           bmr = (10 * weight) + (6.25 * height) - (5 * age) - 161;
         }
 
-        // Step 2: Calculate TDEE by multiplying BMR by activity factor
+        // 2. Calculate TDEE by multiplying BMR by activity factor
         final activityFactor = _activityFactors[_selectedActivityLevel]!;
         final tdee = bmr * activityFactor;
 
-        // Step 3: Estimate sugar intake (e.g., 10% of TDEE calories as sugar)
+        // 3.Estimate sugar intake (e.g., 10% of TDEE calories as sugar)
         // 1g of sugar = 4 calories, so sugar (g) = (TDEE * 0.10) / 4
         final targetSugar = (tdee * 0.10) / 4;
 

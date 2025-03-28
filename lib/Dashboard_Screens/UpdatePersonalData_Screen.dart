@@ -12,19 +12,22 @@ class Update_Screen extends StatefulWidget {
 }
 
 class _UpdateScreenState extends State<Update_Screen> {
+  // Text controllers for input fields
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController weightController = TextEditingController();
   final TextEditingController heightController = TextEditingController();
   final TextEditingController targetSugarController = TextEditingController();
-  bool _isLoading = false;
+  bool _isLoading = false;// Tracks update process status
 
+  // Initialize state and load user data
   @override
   void initState() {
     super.initState();
     _loadUserData();
   }
 
+// Method to Load existing user data from Firestore
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -33,6 +36,7 @@ class _UpdateScreenState extends State<Update_Screen> {
       if (doc.exists) {
         final data = doc.data()!;
         setState(() {
+          // Populate text fields with existing data
           firstNameController.text = data['firstName'] ?? '';
           lastNameController.text = data['lastName'] ?? '';
           weightController.text = data['weight']?.toString() ?? '';
@@ -43,6 +47,7 @@ class _UpdateScreenState extends State<Update_Screen> {
     }
   }
 
+  // Update user data in Firestore
   Future<void> _updateUserData() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) {
@@ -51,14 +56,14 @@ class _UpdateScreenState extends State<Update_Screen> {
       );
       return;
     }
-    if (firstNameController.text.trim().isEmpty ||
-        lastNameController.text.trim().isEmpty) {
+    // Validate required fields
+    if (firstNameController.text.trim().isEmpty || lastNameController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('First name and last name are required')),
       );
       return;
     }
-
+    // Parse and validate numeric inputs
     final weight = double.tryParse(weightController.text.trim());
     final height = double.tryParse(heightController.text.trim());
     final targetSugar = double.tryParse(targetSugarController.text.trim());
@@ -78,11 +83,12 @@ class _UpdateScreenState extends State<Update_Screen> {
     }
 
     setState(() {
-      _isLoading = true;
+      _isLoading = true;// Show loading state
     });
 
     try {
       final docRef = FirebaseFirestore.instance.collection('users').doc(user.uid);
+      // Update Firestore document with new data
       await docRef.set({
         'firstName': firstNameController.text.trim(),
         'lastName': lastNameController.text.trim(),
@@ -92,6 +98,7 @@ class _UpdateScreenState extends State<Update_Screen> {
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Profile updated successfully')),
       );
@@ -106,11 +113,12 @@ class _UpdateScreenState extends State<Update_Screen> {
       );
     } finally {
       setState(() {
-        _isLoading = false;
+        _isLoading = false;// Hide loading state
       });
     }
   }
 
+  //Building the UI
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -122,6 +130,7 @@ class _UpdateScreenState extends State<Update_Screen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: 20),
+              // Header with back button and title
               Row(
                 children: [
                   IconButton(
@@ -201,6 +210,7 @@ class _UpdateScreenState extends State<Update_Screen> {
     );
   }
 
+// Helper method to build update button
   Widget _buildUpdateButton() {
     return Center(
       child: Container(
@@ -223,10 +233,10 @@ class _UpdateScreenState extends State<Update_Screen> {
             elevation: 5,
             textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          onPressed: _isLoading ? null : _updateUserData,
+          onPressed: _isLoading ? null : _updateUserData,// Disable when loading
           child: _isLoading
-              ? CircularProgressIndicator(color: Colors.black)
-              : Text("Update"),
+              ? CircularProgressIndicator(color: Colors.black)// Show loading indicator
+              : Text("Update"),// Show button text
         ),
       ),
     );
