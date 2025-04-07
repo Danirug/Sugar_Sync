@@ -20,7 +20,7 @@ class _SplashScreenState extends State <Splash_Screen> with SingleTickerProvider
     _animationController = AnimationController(
       // Setting up animation controller with 5-second duration
       vsync: this,
-      duration: const Duration(seconds: 5),
+      duration: const Duration(seconds: 10),
     );
     // Creating linear progress animation from 0 to 1
     _progressAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
@@ -35,7 +35,7 @@ class _SplashScreenState extends State <Splash_Screen> with SingleTickerProvider
 
   Future<void> _checkLoginStateAndNavigate() async{
     // Add a delay to show the splash screen for a few seconds
-    await Future.delayed(Duration(seconds: 5));
+    await Future.delayed(Duration(seconds: 10));
 
     // Check if the user is logged in
     final prefs = await SharedPreferences.getInstance();// Getting instance of shared preferences
